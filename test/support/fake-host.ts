@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { kit } from "@oxidevm/sdk/wasm";
-import type { HostOf } from "@oxidevm/sdk/wasm";
+import { kit } from "@oxvm/sdk/wasm";
+import type { HostOf } from "@oxvm/sdk/wasm";
 import type definition from "../../module.ts";
 import { createNodeFiles, descriptor, processId } from "./node-files.ts";
 import type { NodeFilesHarness } from "./node-files.ts";
@@ -110,7 +110,7 @@ export class FakeVm {
   }
 
   #artifact(name: string): Uint8Array {
-    if (name === "oxidevm_pglite.py") return fs.readFileSync(path.join(REPOSITORY, "guest", name));
+    if (name === "oxvm_pglite.py" || name === "oxidevm_pglite.py") return fs.readFileSync(path.join(REPOSITORY, "guest", name));
     if (name === "NOTICES.txt") return fs.readFileSync(path.join(REPOSITORY, "NOTICES.txt"));
     return fs.readFileSync(path.join(PGLITE_DIST, name));
   }

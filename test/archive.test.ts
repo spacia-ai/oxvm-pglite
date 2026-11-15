@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { kit } from "@oxidevm/sdk/wasm";
+import { kit } from "@oxvm/sdk/wasm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { archiveSource, MAX_ARCHIVE_PIECES } from "../src/archive.ts";
 import { MAX_ARCHIVE_BYTES } from "../src/storage.ts";

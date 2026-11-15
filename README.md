@@ -1,32 +1,38 @@
-# oxidevm-pglite
+# oxvm-pglite
 
-PostgreSQL in your OxideVM workspace. This [OxideVM](https://oxidevm.dev) WebAssembly module runs
+PostgreSQL in your OXVM workspace. This [OXVM](https://oxvm.dev) WebAssembly module runs
 [PGlite](https://pglite.dev) (PostgreSQL 18 compiled to WebAssembly) as a service of a Userspace VM. The database is a
 directory of ordinary files in the workspace, and the service shares the VM's process ids and sockets, so real Linux
 programs reach it:
 
-- **`sql`**: a JSON protocol (`oxidevm-sql/1`) on the Unix socket `/workspace/_oxidevm/pglite.sock`, with a small Python client;
+- **`sql`**: a JSON protocol (`oxvm-sql/1`) on the Unix socket `/workspace/_oxidevm/pglite.sock`, with a small Python client;
 - **`pg`**: the PostgreSQL wire protocol on `127.0.0.1:5432`, for `psql`, psycopg, `pg_dump` and any other driver.
 
-It is the reusable form of the database service in the OxideVM sample (`ed4984d`): same behavior, as a module you install
+It is the reusable form of the database service in the OXVM sample (`ed4984d`): same behavior, as a module you install
 with one command instead of code you copy. It asks the host for two things only: file operations and its own process id.
 It starts no program of the image, and it uses no browser storage: no IndexedDB, no Web Locks, no OPFS of its own.
+
+## Compatibility in 0.4.1
+
+Use `oxvm_pglite` for Python clients. The supported `oxidevm_pglite` import forwards to the same API.
+Existing workspace paths, database markers, archives, and database files retain their identities.
+Their migration remains separate from this package update to preserve existing data and clients.
 
 ## Use it
 
 ```sh
-oxidevm wasm add github:spacia-ai/oxidevm-pglite@v0.4.0
+oxvm wasm add github:spacia-ai/oxvm-pglite@v0.4.1
 ```
 
 The command shows what the module declares and asks before it installs anything. It needs a cross-origin isolated page
-(see the [module documentation](https://oxidevm.dev/docs)) and `@oxidevm/sdk` 0.0.12 or later, whose module frame (engine
+(see the [module documentation](https://oxvm.dev/docs)) and `@oxvm/sdk` 0.0.27 or later, whose module frame (engine
 ADR 0028) runs it. A self-hosted runtime serves that frame at `<runtime.baseUrl>module-frame/` with the headers of the
 SDK's `frame.json`. Version 0.1.0 does not start on 0.0.12; see [Changes in 0.2.0](#changes-in-020). What 0.3.0 changed
 for native connections is in [Changes in 0.3.0](#changes-in-030).
 
 ```ts
-import { spawnModule, stopModule } from "@oxidevm/sdk/wasm";
-import { pglite } from "./oxidevm.modules.generated";
+import { spawnModule, stopModule } from "@oxvm/sdk/wasm";
+import { pglite } from "./oxvm.modules.generated";
 
 // A service: it listens until it is stopped, and says where.
 const database = await spawnModule(vm, pglite, { workspaceId: "project-1" });
@@ -43,8 +49,8 @@ From Python in the VM:
 
 ```python
 import sys
-sys.path.insert(0, "/workspace/_oxidevm")   # the module writes oxidevm_pglite.py here
-import oxidevm_pglite as pg
+sys.path.insert(0, "/workspace/_oxidevm")   # the module writes oxvm_pglite.py here
+import oxvm_pglite as pg
 
 pg.query("CREATE TABLE people (id integer PRIMARY KEY, name text)")
 pg.query("INSERT INTO people VALUES ($1, $2)", [1, "Ada"])
@@ -52,7 +58,7 @@ pg.query("SELECT * FROM people")["rows"]    # [{'id': 1, 'name': 'Ada'}]
 ```
 
 `query()` raises `pg.PGliteError` (a `RuntimeError`) when the statement fails. Under Pyodide it connects through the
-bridge the `oxidevm-pyodide` module provides (`oxidevm.connect_unix(path)`, a blocking socket-like object with
+bridge the `oxvm-pyodide` module provides (`oxvm.connect_unix(path)`, a blocking socket-like object with
 `sendall`, `recv` and `close`); with a Linux Python it uses the `socket` module. It detects which at import.
 
 From a shell or any driver (user `postgres`, database `postgres`, no password, no TLS):
@@ -114,7 +120,7 @@ When the last native connection has gone the backend is restored with `DISCARD A
 later `psql` starts clean. A connection that ends in the middle of something is cleaned up at once: its transaction is
 rolled back and the backend is free for the others.
 
-## The JSON endpoint (`oxidevm-sql/1`)
+## The JSON endpoint (`oxvm-sql/1`)
 
 One request per connection. Both directions are a 4-byte big-endian length followed by that many bytes of JSON.
 
@@ -219,9 +225,9 @@ needed.
 
 ```ts
 import { PGlite } from "@electric-sql/pglite";
-import type { UserspaceVM } from "@oxidevm/sdk";
-import { spawnModule } from "@oxidevm/sdk/wasm";
-import { pglite } from "./oxidevm.modules.generated";
+import type { UserspaceVM } from "@oxvm/sdk";
+import { spawnModule } from "@oxvm/sdk/wasm";
+import { pglite } from "./oxvm.modules.generated";
 
 export async function startWithLegacyData(vm: UserspaceVM, legacyName: string) {
   const known = (await indexedDB.databases()).some(database => database.name === `/pglite/${legacyName}`);
@@ -307,30 +313,30 @@ Migration notes:
 ```sh
 pnpm install
 node scripts/fetch-upstream.ts   # mirrors pglite.wasm, initdb.wasm, pglite.data; checks them against upstream/lock.json
-pnpm run check                   # tsc (module, tests, scripts), ESLint (strict type-checked, no warnings), the lock, oxidevm wasm build --check
+pnpm run check                   # tsc (module, tests, scripts), ESLint (strict type-checked, no warnings), the lock, oxvm wasm build --check
 pnpm test                        # unit tests: real PGlite on a directory of this machine, the Python client with python3
 pnpm run build                   # writes dist/: module.json, adapter.mjs, the artifacts and SHA256SUMS
 pnpm run mutate                  # mutation test of the ported logic (needs a clean tree)
-pnpm run test:conformance        # oxidevm wasm test: the runner's contract, in Chromium
+pnpm run test:conformance        # oxvm wasm test: the runner's contract, in Chromium
 pnpm test:browser                # real engine + Chromium (--browser=firefox|webkit), see below
 ```
 
-`@oxidevm/sdk` and `@oxidevm/cli` are exact devDependencies, installed from npm; 0.4.0 is built and tested against the
-0.0.12 line. The committed `pnpm-workspace.yaml` allows
+`@oxvm/sdk` and `@oxvm/cli` are exact devDependencies, installed from npm; 0.4.1 is built and tested against the
+0.0.27 release. The committed `pnpm-workspace.yaml` allows
 the build script of `esbuild`, and `pnpm-lock.yaml` is committed.
 
 ### Real-engine tests
 
 `pnpm test:browser [core] [crash] [migration] [refusal] [--browser=chromium|firefox|webkit]` builds this repository's release, installs it into a fresh project with the
-real CLI (`oxidevm wasm add file:…`), type-checks the page against the generated handle and bundles it with Vite, serves it
+real CLI (`oxvm wasm add file:…`), type-checks the page against the generated handle and bundles it with Vite, serves it
 with the engine release the installed SDK pins, the SDK's module frame (with `frame.json`'s headers) and a signed Userspace
 image, and drives the browser, Chromium by default (`--only=<text>` narrows
 the scenarios). Without suite names, Chromium and Firefox run core, crash and migration, and WebKit runs refusal. It needs:
 
-- `OXIDEVM_TEST_USERSPACE_IMAGE` (an image reference JSON) and `OXIDEVM_TEST_USERSPACE_IMAGE_DIR` (its bundle directory): an
+- `OXVM_TEST_USERSPACE_IMAGE` (an image reference JSON) and `OXVM_TEST_USERSPACE_IMAGE_DIR` (its bundle directory): an
   image with `/usr/bin/python3` 3.12 (the module does not need it; the test clients do);
-- the engine release the installed SDK pins, in `~/.cache/oxidevm/engine/<id>` (or `OXIDEVM_ENGINE_DIR`);
-- the installed SDK's module frame, served with its `frame.json` headers (`OXIDEVM_MODULE_FRAME_DIR` serves another build
+- the engine release the installed SDK pins, in `~/.cache/oxidevm/engine/<id>` (or `OXVM_ENGINE_DIR`);
+- the installed SDK's module frame, served with its `frame.json` headers (`OXVM_MODULE_FRAME_DIR` serves another build
   of it, such as an SDK checkout with a fix);
 - `.cache/postgres-clients.tar.gz`: native `psql` 17 and psycopg 3.2.13 for musl, made by `node scripts/stage-postgres-clients.ts`
   (needs Docker) and checked against `test/postgres-clients.lock.json`. It is a test tool only: it contains libraries under
@@ -341,7 +347,7 @@ write normally and its second with `EPIPE`, and the write that gets `EPIPE` ends
 passed `noSignal`; a peer that reset the connection answers the first write with `ECONNRESET` and only then `EPIPE`.
 That is why the suite has a client that closes cleanly: with `{ noSignal: true }` taken out of `src/client-sink.ts`, the
 reset and killed-`psql` cases still pass and the clean close fails with `the module ended instead of failing that one
-connection: signal 13`. With `@oxidevm/sdk` 0.0.7, a 30 MB `write(2)` to `/dev/null` returned 16 777 216 and `psql -A -t`
+connection: signal 13`. With the historical `@oxidevm/sdk` 0.0.7, a 30 MB `write(2)` to `/dev/null` returned 16 777 216 and `psql -A -t`
 with its output on `/dev/null` failed with `could not print result table: Invalid argument`; the engine that 0.0.8 pins
 accepts both whole, and the core suite checks it with `psql -o /dev/null` and 30 MB `write(2)` and `writev(2)` calls.
 
@@ -365,22 +371,22 @@ Publishing changes what others can install, so it goes draft, verify, publish: t
 against its own `SHA256SUMS` before it becomes visible. The tag must name the version in `module.ts`.
 
 ```sh
-git tag v0.4.0 && git push origin v0.4.0
+git tag v0.4.1 && git push origin v0.4.1
 pnpm run build
-gh release create v0.4.0 dist/* --draft --verify-tag --title v0.4.0
-gh release download v0.4.0 --dir verify && (cd verify && sha256sum --check SHA256SUMS)
-gh release edit v0.4.0 --draft=false
+gh release create v0.4.1 dist/* --draft --verify-tag --title v0.4.1
+gh release download v0.4.1 --dir verify && (cd verify && sha256sum --check SHA256SUMS)
+gh release edit v0.4.1 --draft=false
 ```
 
 `pnpm run release` prints these steps and runs none of them. The `release` workflow does the same in GitHub Actions, in two
 jobs: a read-only one fetches the mirrored WebAssembly and builds, and a second one, which installs nothing, drafts, verifies
 and publishes. The `ci` workflow runs on pushes to `main` and on pull requests, and `release` runs when a `v*` tag is pushed.
 Consumers install with
-`oxidevm wasm add github:spacia-ai/oxidevm-pglite@v0.4.0`.
+`oxvm wasm add github:spacia-ai/oxvm-pglite@v0.4.1`.
 
 ### Build warnings
 
-`oxidevm wasm build` prints warnings about the PGlite library it bundles. They are expected: `import.meta` and `window`
+`oxvm wasm build` prints warnings about the PGlite library it bundles. They are expected: `import.meta` and `window`
 appear in PGlite's Emscripten loader on code paths a worker with explicitly supplied artifacts does not take (this module
 passes the compiled WebAssembly and the file bundle itself), and so does `XMLHttpRequest`, which the module frame does not
 have (the loader would use it only to download those files; this module has no network reach, see [Network](#network)); `eval` appears in two places of that loader, so a page content

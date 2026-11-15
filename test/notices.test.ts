@@ -23,7 +23,7 @@ describe("NOTICES.txt", () => {
     // The file is one of the release's checksummed files, so a stale version here is published as is.
     const version = /^\s*version: "([^"]+)",$/mu.exec(fs.readFileSync(path.join(root, "module.ts"), "utf8"))?.[1];
     expect(version).toBeDefined();
-    expect(/^This release \(oxidevm-pglite ([^)]+)\) contains:$/mu.exec(notices)?.[1]).toBe(version);
+    expect(/^This release \(oxvm-pglite ([^)]+)\) contains:$/mu.exec(notices)?.[1]).toBe(version);
   });
 
   it("holds the license texts of every component it lists", () => {

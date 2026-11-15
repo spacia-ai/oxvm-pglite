@@ -1,7 +1,7 @@
-import type { UserspaceVM } from "@oxidevm/sdk";
-import { spawnModule, stopModule } from "@oxidevm/sdk/wasm";
+import type { UserspaceVM } from "@oxvm/sdk";
+import { spawnModule, stopModule } from "@oxvm/sdk/wasm";
 import { CLIENT_ENV, CLIENT_IMPORT, DEV_NULL_WRITES, DRIVER, JSON_HANGUP, JSON_POLL, NATIVE_CLEAN_HANGUP, NATIVE_HANGUP, PSQL_KILLED, exchangeOf, installClients, psql, psqlToDevNull, rawExchange, sqlRequest } from "./native";
-import { pglite } from "./oxidevm.modules.generated";
+import { pglite } from "./oxvm.modules.generated";
 import type { ScenarioResult, SuiteConfig } from "./protocol";
 import { describeExit, expect, expectEqual, expectFailure, openVM, python, run, runScenarios, sha256, until } from "./util";
 import type { Scenario } from "./util";
@@ -54,7 +54,7 @@ export async function core(config: SuiteConfig): Promise<readonly ScenarioResult
     ["start: an invalid dataDir is refused by the adapter with its own message", async () => {
       const refused = await expectFailure(spawnModule(vm, pglite, { workspaceId: WORKSPACE_ID, options: { dataDir: "/tmp/pgdata" } }));
       expect(refused.code === "GUEST_CRASH" && refused.reason === "wasm-module-adapter" && refused.message.includes("The dataDir option must be an absolute path inside /workspace"), JSON.stringify(refused));
-      const written = await python(vm, "import os\nprint(os.path.exists('/workspace/_oxidevm/oxidevm_pglite.py'))");
+      const written = await python(vm, "import os\nprint(os.path.exists('/workspace/_oxidevm/oxvm_pglite.py'))");
       return `${refused.reason}; guest files written by the runner before the adapter ran: ${written}`;
     }],
     ["start: the first start creates the database and reports itself in the ready line", async () => {
@@ -62,18 +62,20 @@ export async function core(config: SuiteConfig): Promise<readonly ScenarioResult
       service = await start(vm);
       watchService(service, stderr);
       const { info, endpoints } = service;
-      expectEqual(info, { version: "18.6", backend: "pglite-wasm", dataDir: "/workspace/pgdata", durability: "strict" }, "info");
+      expectEqual(info, { version: "18.6", backend: "pglite-wasm", storage: "workspace", dataDir: "/workspace/pgdata", durability: "strict" }, "info");
       expectEqual(endpoints, pglite.manifest.expose, "endpoints");
       const version = await python(vm, "import sys\nprint(sys.version.split()[0])");
       return `${((performance.now() - started) / 1000).toFixed(1)} s, python ${version}, pid ${String(service.pid)}`;
     }],
     ["guest files: the Python client is in the workspace with the pinned content, and no helper program exists", async () => {
-      const pin = pglite.pins.artifacts["oxidevm_pglite.py"];
-      expect(pin !== undefined, "oxidevm_pglite.py is not pinned");
-      expectEqual(await sha256(await vm.workspace.readText("_oxidevm/oxidevm_pglite.py")), pin?.sha256, "oxidevm_pglite.py");
+      for (const name of ["oxidevm_pglite.py", "oxvm_pglite.py"] as const) {
+        const pin = pglite.pins.artifacts[name];
+        expect(pin !== undefined, `${name} is not pinned`);
+        expectEqual(await sha256(await vm.workspace.readText(`_oxidevm/${name}`)), pin?.sha256, name);
+      }
       const names = await python(vm, "import os\nprint(sorted(name for name in os.listdir('/workspace/_oxidevm') if name.endswith('.py')))");
-      expectEqual(names, "['oxidevm_pglite.py']", "Python files of the module");
-      return "oxidevm_pglite.py";
+      expectEqual(names, "['oxidevm_pglite.py', 'oxvm_pglite.py']", "Python files of the module");
+      return "canonical Python client and supported legacy import";
     }],
     ["JSON endpoint: the reply has the documented shape (raw socket, native python3)", async () => {
       const out = exchangeOf(await python(vm, rawExchange(sqlRequest("SELECT 42 AS n, $1::text AS label", '["x"]'))));
@@ -85,7 +87,7 @@ export async function core(config: SuiteConfig): Promise<readonly ScenarioResult
       expectEqual(failing.reply, { ok: false, error: 'relation "nowhere" does not exist' }, "error reply");
       return `reply of ${String(out.size)} bytes`;
     }],
-    ["oxidevm_pglite.query from native python3: parameters, 64-bit integers as text, errors, COPY refused", async () => {
+    ["oxvm_pglite.query from native python3: parameters, 64-bit integers as text, errors, COPY refused", async () => {
       const out = await python(vm, `${CLIENT_IMPORT}
 pg.query("CREATE TABLE people(id integer PRIMARY KEY, name text, big bigint)")
 pg.query("INSERT INTO people VALUES ($1, $2, $3)", [1, "Ada", "9223372036854775807"])

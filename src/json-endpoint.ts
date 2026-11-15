@@ -11,7 +11,7 @@ type Gate = ReturnType<Kit["gate"]>;
 type Framing = Pick<Kit["framing"], "readExactly" | "writeFrame">;
 type FrameSource = Parameters<Framing["readExactly"]>[0];
 
-/** The limits of the `oxidevm-sql/1` protocol. */
+/** The limits of the `oxvm-sql/1` protocol. */
 export const MAX_REQUEST_BYTES = 64 * 1024;
 export const MAX_REPLY_BYTES = 1024 * 1024;
 export const MAX_PARAMS = 1024;
@@ -61,7 +61,7 @@ async function readRequest(source: FrameSource, signal: AbortSignal, framing: Fr
 }
 
 /**
- * The handler of the `oxidevm-sql/1` endpoint: one request per connection, a length-prefixed JSON object
+ * The handler of the `oxvm-sql/1` endpoint: one request per connection, a length-prefixed JSON object
  * `{ sql, params }`, answered by a length-prefixed `{ ok: true, result }` or `{ ok: false, error }`. A client
  * that goes away before it has sent a whole request gets no reply (there is nobody to read it). A client that
  * goes away before it has read its reply makes that one write fail with EPIPE, which the runner reports for

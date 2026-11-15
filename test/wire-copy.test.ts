@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
-import { kit } from "@oxidevm/sdk/wasm";
+import { kit } from "@oxvm/sdk/wasm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { int32, join } from "../src/bytes.ts";
 import { VMPostgresFS } from "../src/vm-fs.ts";

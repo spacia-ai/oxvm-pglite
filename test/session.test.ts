@@ -1,5 +1,5 @@
 import { PGlite } from "@electric-sql/pglite";
-import { kit } from "@oxidevm/sdk/wasm";
+import { kit } from "@oxvm/sdk/wasm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { EMBEDDED_TRANSACTION_MESSAGE, SESSION_BUSY_MESSAGE, SESSION_WAIT_MS, SESSION_WAIT_EXPIRED_MESSAGE, createSharedBackend, withStatementSession } from "../src/session.ts";
 import type { Party, SharedBackend } from "../src/session.ts";

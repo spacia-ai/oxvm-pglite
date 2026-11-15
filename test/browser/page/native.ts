@@ -1,4 +1,4 @@
-import type { UserspaceVM } from "@oxidevm/sdk";
+import type { UserspaceVM } from "@oxvm/sdk";
 import type { SuiteConfig } from "./protocol";
 import { python, run } from "./util";
 import type { Run } from "./util";
@@ -9,7 +9,7 @@ export const CLIENT_ENV = { PYTHONPATH: `${CLIENTS}/python`, LD_LIBRARY_PATH: `$
 export const POSTGRES_URL = "postgresql://postgres@127.0.0.1:5432/postgres?sslmode=disable";
 
 /** Imports the module's Python client, which the module wrote into the workspace. */
-export const CLIENT_IMPORT = "import sys\nsys.path.insert(0, '/workspace/_oxidevm')\nimport oxidevm_pglite as pg\n";
+export const CLIENT_IMPORT = "import sys\nsys.path.insert(0, '/workspace/_oxidevm')\nimport oxvm_pglite as pg\n";
 
 /**
  * A program that sends one request to the JSON endpoint over a plain Linux socket, as any client in any language

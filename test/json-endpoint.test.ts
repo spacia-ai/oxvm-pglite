@@ -1,5 +1,5 @@
 import { PGlite } from "@electric-sql/pglite";
-import { kit } from "@oxidevm/sdk/wasm";
+import { kit } from "@oxvm/sdk/wasm";
 import { describe, expect, it } from "vitest";
 import { isRecord } from "../src/decode.ts";
 import { jsonEndpoint } from "../src/json-endpoint.ts";
@@ -29,7 +29,7 @@ function endpoint(database: SqlDatabase, extra: Partial<JsonEndpointDeps> = {}):
 
 const request = (sql: unknown, params: unknown = []): Uint8Array => frame(JSON.stringify({ sql, params }));
 
-describe("oxidevm-sql/1 replies", () => {
+describe("oxvm-sql/1 replies", () => {
   it("answers one request with the result, the service pid and the backend name, in one frame", async () => {
     const { database, calls } = stub({ rows: [{ n: 42 }], fields: [{ name: "n", dataTypeID: 23 }], affectedRows: 0 });
     const connection = fakeConnection(request("SELECT $1::int AS n", [42]));
@@ -75,7 +75,7 @@ describe("oxidevm-sql/1 replies", () => {
   });
 });
 
-describe("oxidevm-sql/1 requests", () => {
+describe("oxvm-sql/1 requests", () => {
   it("accepts a request of exactly 64 KiB and refuses a larger one without reading it", async () => {
     const padding = "x".repeat(65536 - JSON.stringify({ sql: "", params: [] }).length - 0);
     const exact = frame(JSON.stringify({ sql: padding, params: [] }));
@@ -134,7 +134,7 @@ describe("oxidevm-sql/1 requests", () => {
   });
 });
 
-describe("oxidevm-sql/1 failures", () => {
+describe("oxvm-sql/1 failures", () => {
   it("reports a failing statement with the database's message, at most 4096 characters", async () => {
     const failing: SqlDatabase = { query: () => Promise.reject(new Error(`relation "t" does not exist ${"!".repeat(5000)}`)) };
     const connection = fakeConnection(request("SELECT * FROM t"));
