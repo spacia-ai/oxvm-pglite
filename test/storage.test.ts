@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
-import { kit } from "@oxidevm/sdk/wasm";
+import { kit } from "@oxvm/sdk/wasm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { archiveSource } from "../src/archive.ts";
 import { fingerprint } from "../src/fingerprint.ts";
@@ -19,7 +19,7 @@ const opened: OpenedDatabase[] = [];
 
 beforeEach(() => {
   base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "pglite-storage-")));
-  backupDir = path.join(base, "_oxidevm");
+  backupDir = path.join(base, "_oxvm");
   fs.mkdirSync(backupDir);
   dataDir = path.join(base, "pgdata");
   stagingDir = path.join(backupDir, "pgdata-migrating");

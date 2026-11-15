@@ -1,6 +1,6 @@
 import { PGlite } from "@electric-sql/pglite";
 import type { PGliteOptions } from "@electric-sql/pglite";
-import { defineModule } from "@oxidevm/sdk/wasm";
+import { defineModule } from "@oxvm/sdk/wasm";
 import { createClientSink } from "./src/client-sink.ts";
 import { ensureGuestFiles } from "./src/guest-files.ts";
 import { BACKEND, jsonEndpoint } from "./src/json-endpoint.ts";
@@ -12,25 +12,26 @@ import { openDatabase } from "./src/storage.ts";
 import { wireSession } from "./src/wire.ts";
 
 /**
- * PGlite, PostgreSQL for WebAssembly, as an OxideVM service. It keeps its database as live files in the
- * workspace, answers JSON statements on a Unix socket (`oxidevm-sql/1`, for Python and JavaScript clients) and
+ * PGlite, PostgreSQL for WebAssembly, as an OXVM service. It keeps its database as live files in the
+ * workspace, answers JSON statements on a Unix socket (`oxvm-sql/1`, for Python and JavaScript clients) and
  * speaks the PostgreSQL protocol on 127.0.0.1:5432 (for psql, psycopg and any driver).
  */
 export default defineModule({
   manifest: {
     id: "pglite",
-    version: "0.4.0",
+    version: "0.4.1",
     abi: "emscripten",
     artifacts: [
       { name: "pglite.wasm", from: "upstream/pglite.wasm" },
       { name: "initdb.wasm", from: "upstream/initdb.wasm" },
       { name: "pglite.data", from: "upstream/pglite.data" },
+      { name: "oxvm_pglite.py", from: "guest/oxvm_pglite.py" },
       { name: "oxidevm_pglite.py", from: "guest/oxidevm_pglite.py" },
       { name: "NOTICES.txt", from: "NOTICES.txt" },
     ],
     process: { kind: "service", exclusive: "workspace" },
     expose: {
-      sql: { kind: "unix", path: "/workspace/_oxidevm/pglite.sock", protocol: "oxidevm-sql/1" },
+      sql: { kind: "unix", path: "/workspace/_oxidevm/pglite.sock", protocol: "oxvm-sql/1" },
       pg: { kind: "tcp", port: 5432, protocol: "postgres-3.0" },
     },
     // No network reach: the service opens no connections of its own and serves programs in the VM through `expose`.
@@ -40,7 +41,10 @@ export default defineModule({
     limits: { clients: 4, startupMs: 300_000 },
     mounts: [{ guest: "/workspace", access: "rw", durability: "fsync" }],
     state: { durable: ["/workspace/pgdata"] },
-    guestFiles: [{ artifact: "oxidevm_pglite.py", to: "/workspace/_oxidevm/oxidevm_pglite.py", mode: 0o644 }],
+    guestFiles: [
+      { artifact: "oxvm_pglite.py", to: "/workspace/_oxidevm/oxvm_pglite.py", mode: 0o644 },
+      { artifact: "oxidevm_pglite.py", to: "/workspace/_oxidevm/oxidevm_pglite.py", mode: 0o644 },
+    ],
     options: {
       dataDir: { type: "string", maxLength: 255, default: "/workspace/pgdata" },
       durability: { type: "enum", values: ["relaxed", "strict"], default: "strict" },

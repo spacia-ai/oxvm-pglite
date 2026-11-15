@@ -1,4 +1,4 @@
-import { GUEST_FILES, OXIDEVM_DIRECTORY } from "./layout.ts";
+import { GUEST_FILES, OXVM_DIRECTORY } from "./layout.ts";
 import type { KitErrno, SyncFiles } from "./ports.ts";
 import { uniqueSuffix } from "./unique.ts";
 
@@ -35,7 +35,7 @@ function sameContent(host: GuestFileHost, target: string, expected: Uint8Array):
  */
 export async function ensureGuestFiles(host: GuestFileHost, files: readonly GuestFile[] = GUEST_FILES): Promise<void> {
   try {
-    host.fs.mkdir(host.directory ?? OXIDEVM_DIRECTORY, 0o755);
+    host.fs.mkdir(host.directory ?? OXVM_DIRECTORY, 0o755);
   } catch (error: unknown) {
     if (host.errno.of(error) !== EEXIST) throw error;
   }

@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import { classifyLicense, decodeDeclaration, isServiceDecl } from "@oxidevm/sdk/wasm";
+import { classifyLicense, decodeDeclaration, isServiceDecl } from "@oxvm/sdk/wasm";
 import { describe, expect, it } from "vitest";
 import definition from "../module.ts";
 import { decodeLock } from "../scripts/upstream.ts";
-import { CLIENT_SCRIPT, GUEST_FILES, OXIDEVM_DIRECTORY, SQL_SOCKET, STAGING_DIRECTORY } from "../src/layout.ts";
+import { CLIENT_SCRIPT, GUEST_FILES, OXVM_DIRECTORY, SQL_SOCKET, STAGING_DIRECTORY } from "../src/layout.ts";
 
 const { manifest } = definition;
 const root = path.join(import.meta.dirname, "..");
@@ -18,12 +18,12 @@ describe("the manifest", () => {
   });
 
   it("is a service for Emscripten-built WebAssembly, exclusive per workspace, serving at most four clients", () => {
-    expect(manifest).toMatchObject({ id: "pglite", version: "0.4.0", abi: "emscripten", process: { kind: "service", exclusive: "workspace" }, limits: { clients: 4, startupMs: 300_000 } });
+    expect(manifest).toMatchObject({ id: "pglite", version: "0.4.1", abi: "emscripten", process: { kind: "service", exclusive: "workspace" }, limits: { clients: 4, startupMs: 300_000 } });
   });
 
   it("exposes the JSON endpoint on a Unix socket and the PostgreSQL protocol on the standard port", () => {
     expect(manifest.expose).toEqual({
-      sql: { kind: "unix", path: "/workspace/_oxidevm/pglite.sock", protocol: "oxidevm-sql/1" },
+      sql: { kind: "unix", path: "/workspace/_oxidevm/pglite.sock", protocol: "oxvm-sql/1" },
       pg: { kind: "tcp", port: 5432, protocol: "postgres-3.0" },
     });
     expect(manifest.expose.sql.path).toBe(SQL_SOCKET);
@@ -46,11 +46,11 @@ describe("the manifest", () => {
     });
   });
 
-  it("declares the one guest file the adapter writes, the Python client", () => {
+  it("declares the Python client and its supported legacy import", () => {
     expect(manifest.guestFiles).toEqual(GUEST_FILES.map(file => ({ artifact: file.artifact, to: file.to, mode: file.mode })));
-    expect(GUEST_FILES.map(file => file.to)).toEqual([CLIENT_SCRIPT]);
-    for (const file of GUEST_FILES) expect(file.to.startsWith(`${OXIDEVM_DIRECTORY}/`)).toBe(true);
-    expect(STAGING_DIRECTORY.startsWith(`${OXIDEVM_DIRECTORY}/`)).toBe(true);
+    expect(GUEST_FILES.map(file => file.to)).toEqual([CLIENT_SCRIPT, `${OXVM_DIRECTORY}/oxidevm_pglite.py`]);
+    for (const file of GUEST_FILES) expect(file.to.startsWith(`${OXVM_DIRECTORY}/`)).toBe(true);
+    expect(STAGING_DIRECTORY.startsWith(`${OXVM_DIRECTORY}/`)).toBe(true);
   });
 });
 
@@ -69,7 +69,7 @@ describe("the artifacts", () => {
   it("name every guest file and the notices", () => {
     const names = new Set(manifest.artifacts.map(artifact => artifact.name));
     for (const file of manifest.guestFiles) expect(names.has(file.artifact)).toBe(true);
-    expect([...names].sort()).toEqual(["NOTICES.txt", "initdb.wasm", "oxidevm_pglite.py", "pglite.data", "pglite.wasm"]);
+    expect([...names].sort()).toEqual(["NOTICES.txt", "initdb.wasm", "oxidevm_pglite.py", "oxvm_pglite.py", "pglite.data", "pglite.wasm"]);
     for (const notice of manifest.license.notices) expect(names.has(notice)).toBe(true);
   });
 

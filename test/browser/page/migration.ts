@@ -1,12 +1,12 @@
 import { PGlite } from "@electric-sql/pglite";
-import { spawnModule, stopModule } from "@oxidevm/sdk/wasm";
+import { spawnModule, stopModule } from "@oxvm/sdk/wasm";
 import { CLIENT_IMPORT } from "./native";
-import { pglite } from "./oxidevm.modules.generated";
+import { pglite } from "./oxvm.modules.generated";
 import type { ScenarioResult, SuiteConfig } from "./protocol";
 import { expect, expectEqual, openVM, python, runScenarios } from "./util";
 
 /** The IndexedDB database the sample's application kept its data in. */
-const LEGACY = "oxidevm-pyodide-v1-pglite";
+const LEGACY = "oxvm-pyodide-v1-pglite";
 
 async function compiled(url: string): Promise<WebAssembly.Module> {
   return WebAssembly.compileStreaming(fetch(url));

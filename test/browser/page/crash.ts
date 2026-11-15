@@ -1,6 +1,6 @@
-import { spawnModule } from "@oxidevm/sdk/wasm";
+import { spawnModule } from "@oxvm/sdk/wasm";
 import { CLIENT_IMPORT } from "./native";
-import { pglite } from "./oxidevm.modules.generated";
+import { pglite } from "./oxvm.modules.generated";
 import type { ScenarioResult, SuiteConfig } from "./protocol";
 import { expectEqual, openVM, python, runScenarios } from "./util";
 

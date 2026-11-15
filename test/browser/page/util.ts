@@ -1,5 +1,5 @@
-import { createVM, defineImage } from "@oxidevm/sdk";
-import type { ExecSpec, ProcessExit, UserspaceVM } from "@oxidevm/sdk";
+import { createVM, defineImage } from "@oxvm/sdk";
+import type { ExecSpec, ProcessExit, UserspaceVM } from "@oxvm/sdk";
 import type { ScenarioResult, SuiteConfig } from "./protocol";
 
 const decoder = new TextDecoder();

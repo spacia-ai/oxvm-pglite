@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { LinuxError } from "@oxidevm/sdk/js-process";
-import { kit } from "@oxidevm/sdk/wasm";
+import { LinuxError } from "@oxvm/sdk/js-process";
+import { kit } from "@oxvm/sdk/wasm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ensureGuestFiles } from "../src/guest-files.ts";
 import type { GuestFileHost } from "../src/guest-files.ts";
@@ -12,7 +12,7 @@ let base = "", directory = "";
 let writes: string[];
 beforeEach(() => {
   base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "pglite-guest-files-")));
-  directory = path.join(base, "_oxidevm");
+  directory = path.join(base, "_oxvm");
   writes = [];
 });
 afterEach(() => { fs.rmSync(base, { recursive: true, force: true }); });

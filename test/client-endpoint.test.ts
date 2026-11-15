@@ -3,7 +3,7 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
-import { kit } from "@oxidevm/sdk/wasm";
+import { kit } from "@oxvm/sdk/wasm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { jsonEndpoint } from "../src/json-endpoint.ts";
 import type { Connection } from "../src/ports.ts";
@@ -60,7 +60,7 @@ afterAll(async () => {
 });
 
 async function python(code: string): Promise<string> {
-  const program = `import sys, json\nsys.path[:0] = [${JSON.stringify(GUEST)}]\nimport oxidevm_pglite as pg\nSOCKET = ${JSON.stringify(socketPath)}\ndef q(sql, params=None): return pg.query(sql, params, path=SOCKET)\n${code}`;
+  const program = `import sys, json\nsys.path[:0] = [${JSON.stringify(GUEST)}]\nimport oxvm_pglite as pg\nSOCKET = ${JSON.stringify(socketPath)}\ndef q(sql, params=None): return pg.query(sql, params, path=SOCKET)\n${code}`;
   const run = await runPython(["-I", "-c", program], "");
   expect(run.stderr).toBe("");
   return run.stdout.trim();

@@ -1,7 +1,7 @@
 import fs from "node:fs";
-import { LinuxError } from "@oxidevm/sdk/js-process";
+import { LinuxError } from "@oxvm/sdk/js-process";
 import type { NativeProcesses } from "../../src/ports.ts";
-import type { FileDescriptor, LinuxDirectoryEntry, LinuxFileStat, LinuxPath, LinuxSyncWriteOptions, LinuxTimeOptions, LinuxTimestamp, SeekOrigin } from "@oxidevm/sdk/js-process";
+import type { FileDescriptor, LinuxDirectoryEntry, LinuxFileStat, LinuxPath, LinuxSyncWriteOptions, LinuxTimeOptions, LinuxTimestamp, SeekOrigin } from "@oxvm/sdk/js-process";
 
 /** The VM file operations the adapter's modules use, backed by a real directory of the machine running the test. */
 export interface NodeFiles {

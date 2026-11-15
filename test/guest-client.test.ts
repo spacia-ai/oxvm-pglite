@@ -43,11 +43,11 @@ const answer = (connection: net.Socket, value: unknown): void => { connection.en
 
 /** Runs Python code that imports the client from the guest directory. */
 function client(code: string, socket: string, extra: readonly string[] = []): Promise<{ code: number | null; stdout: string; stderr: string }> {
-  const program = `import sys\nsys.path[:0] = ${JSON.stringify([...extra, GUEST])}\nimport oxidevm_pglite as pg\nSOCKET = ${JSON.stringify(socket)}\n${code}`;
+  const program = `import sys\nsys.path[:0] = ${JSON.stringify([...extra, GUEST])}\nimport oxvm_pglite as pg\nSOCKET = ${JSON.stringify(socket)}\n${code}`;
   return runPython(["-I", "-c", program], "");
 }
 
-describe("oxidevm_pglite.query", () => {
+describe("oxvm_pglite.query", () => {
   it("sends { sql, params } in one framed request and returns the result of an ok reply", async () => {
     const result = { rows: [{ next: 42 }], fields: [{ name: "next", dataTypeID: 23 }], affectedRows: 0, pid: 7, backend: "pglite-wasm" };
     const server = await endpoint((_request, connection) => { answer(connection, { ok: true, result }); });
@@ -150,11 +150,11 @@ describe("the transport", () => {
   function bridge(source: string): string {
     const modules = path.join(directory, "bridge");
     fs.mkdirSync(modules);
-    fs.writeFileSync(path.join(modules, "oxidevm.py"), source);
+    fs.writeFileSync(path.join(modules, "oxvm.py"), source);
     return modules;
   }
 
-  it("uses oxidevm.connect_unix when the OxideVM bridge provides it (Pyodide)", async () => {
+  it("uses oxvm.connect_unix when the OXVM bridge provides it (Pyodide)", async () => {
     const server = await endpoint((_request, connection) => { answer(connection, { ok: true, result: { rows: [1] } }); });
     const modules = bridge([
       "import socket",
@@ -165,7 +165,7 @@ describe("the transport", () => {
       "    connection.connect(path)",
       "    return connection",
     ].join("\n"));
-    const run = await client('import oxidevm\nprint(pg.query("SELECT 1", path=SOCKET)["rows"], oxidevm.calls == [SOCKET])', server.socket, [modules]);
+    const run = await client('import oxvm\nprint(pg.query("SELECT 1", path=SOCKET)["rows"], oxvm.calls == [SOCKET])', server.socket, [modules]);
     expect(run.stderr).toBe("");
     expect(run.stdout.trim()).toBe("[1] True");
   });
@@ -187,7 +187,7 @@ describe("the transport", () => {
     expect(run.stdout.trim()).toBe("[2]");
   });
 
-  it("falls back to the socket module when an unrelated oxidevm module has no connect_unix", async () => {
+  it("falls back to the socket module when an unrelated oxvm module has no connect_unix", async () => {
     const server = await endpoint((_request, connection) => { answer(connection, { ok: true, result: { rows: [3] } }); });
     const modules = bridge("VALUE = 1\n");
     const run = await client('print(pg.query("SELECT 1", path=SOCKET)["rows"])', server.socket, [modules]);

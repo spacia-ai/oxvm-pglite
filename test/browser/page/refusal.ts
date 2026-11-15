@@ -1,6 +1,6 @@
-import type { UserspaceVM } from "@oxidevm/sdk";
-import { spawnModule } from "@oxidevm/sdk/wasm";
-import { pglite } from "./oxidevm.modules.generated";
+import type { UserspaceVM } from "@oxvm/sdk";
+import { spawnModule } from "@oxvm/sdk/wasm";
+import { pglite } from "./oxvm.modules.generated";
 import type { ScenarioResult, SuiteConfig } from "./protocol";
 import { expect, openVM, runScenarios } from "./util";
 

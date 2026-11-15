@@ -1,4 +1,4 @@
-import { OXIDEVM_DIRECTORY } from "./layout.ts";
+import { OXVM_DIRECTORY } from "./layout.ts";
 
 const WORKSPACE = "/workspace";
 
@@ -9,7 +9,7 @@ const WORKSPACE = "/workspace";
 export function resolveDataDir(value: string): string {
   const refusal = new Error("The dataDir option must be an absolute path inside /workspace, outside /workspace/_oxidevm, without empty, . or .. segments");
   if (!insideWorkspace(value)) throw refusal;
-  if (value === OXIDEVM_DIRECTORY || value.startsWith(`${OXIDEVM_DIRECTORY}/`)) throw refusal;
+  if (value === OXVM_DIRECTORY || value.startsWith(`${OXVM_DIRECTORY}/`)) throw refusal;
   return value;
 }
 

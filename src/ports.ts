@@ -1,4 +1,4 @@
-import type { Connection, Host, Kit } from "@oxidevm/sdk/wasm";
+import type { Connection, Host, Kit } from "@oxvm/sdk/wasm";
 
 /**
  * The host operations the leaf modules use, named after the capability that provides them. They are derived

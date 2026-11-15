@@ -1,13 +1,13 @@
 // The shared harness of the real-engine tests. It does what a developer does, then runs the result:
-//   1. builds this repository's release with `oxidevm wasm build`;
-//   2. installs it into a fresh project with the real CLI (`oxidevm wasm add file:… --yes`), which stages the files and
+//   1. builds this repository's release with `oxvm wasm build`;
+//   2. installs it into a fresh project with the real CLI (`oxvm wasm add file:… --yes`), which stages the files and
 //      generates the typed handle, and type-checks the page against that handle with the strict flags;
 //   3. builds the page with Vite, serves it with the pinned engine and a signed Userspace image, and drives a browser
 //      (Chromium by default, `--browser=firefox` or `--browser=webkit`).
 //
 //   pnpm test:browser [core] [crash] [migration] [refusal] [--browser=chromium|firefox|webkit]
-//   OXIDEVM_TEST_USERSPACE_IMAGE=<image reference JSON> OXIDEVM_TEST_USERSPACE_IMAGE_DIR=<bundle dist> pnpm test:browser
-//   OXIDEVM_MODULE_FRAME_DIR=<module-frame directory> serves another build of the SDK module frame than the installed one
+//   OXVM_TEST_USERSPACE_IMAGE=<image reference JSON> OXVM_TEST_USERSPACE_IMAGE_DIR=<bundle dist> pnpm test:browser
+//   OXVM_MODULE_FRAME_DIR=<module-frame directory> serves another build of the SDK module frame than the installed one
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -21,7 +21,7 @@ import { promisify } from "node:util";
 import { chromium, firefox, webkit } from "playwright";
 import type { Browser, BrowserContext, Page } from "playwright";
 import { build } from "vite";
-import { decodeProjectConfig, getSDKRelease, pinnedEngineCompliance } from "@oxidevm/sdk/image-builder";
+import { decodeProjectConfig, getSDKRelease, pinnedEngineCompliance } from "@oxvm/sdk/image-builder";
 import type { ScenarioResult, SuiteConfig } from "./page/protocol.ts";
 
 const execute = promisify(execFile);
@@ -73,13 +73,13 @@ interface Layout {
   readonly moduleFrame: { readonly dir: string; readonly headers: readonly (readonly [string, string])[] };
 }
 
-/** The installed SDK's module frame; `OXIDEVM_MODULE_FRAME_DIR` serves another build of it (an SDK checkout with a fix). */
-const MODULE_FRAME = process.env["OXIDEVM_MODULE_FRAME_DIR"] ?? join(root, "node_modules/@oxidevm/sdk/assets/module-frame");
+/** The installed SDK's module frame; `OXVM_MODULE_FRAME_DIR` serves another build of it (an SDK checkout with a fix). */
+const MODULE_FRAME = process.env["OXVM_MODULE_FRAME_DIR"] ?? join(root, "node_modules/@oxvm/sdk/assets/module-frame");
 
 /** The response headers `frame.json` prescribes for the module frame's files; without them the frame's CSP is missing. */
 async function moduleFrameHeaders(): Promise<readonly (readonly [string, string])[]> {
   const text = await readFile(join(MODULE_FRAME, "frame.json"), "utf8").catch(() => undefined);
-  if (text === undefined) throw new MissingPrerequisite(`${MODULE_FRAME}/frame.json is missing: the installed @oxidevm/sdk has no module frame (SDK 0.0.12 and later have one).`);
+  if (text === undefined) throw new MissingPrerequisite(`${MODULE_FRAME}/frame.json is missing: the installed @oxvm/sdk has no module frame (SDK 0.0.12 and later have one).`);
   const parsed: unknown = JSON.parse(text);
   const headers: unknown = typeof parsed === "object" && parsed !== null ? Reflect.get(parsed, "headers") : undefined;
   assert(typeof headers === "object" && headers !== null && !Array.isArray(headers), "frame.json has no headers object");
@@ -124,19 +124,19 @@ export class Harness {
 
   /** Builds, installs, type-checks, bundles and serves everything; fails early and clearly when a prerequisite is missing. */
   static async start(options: HarnessOptions): Promise<Harness> {
-    const imageFile = required("OXIDEVM_TEST_USERSPACE_IMAGE", "an image reference JSON");
-    const imageDir = required("OXIDEVM_TEST_USERSPACE_IMAGE_DIR", "the directory of the image bundle");
-    const cli = join(root, "node_modules/@oxidevm/cli/dist/bin.js");
+    const imageFile = required("OXVM_TEST_USERSPACE_IMAGE", "an image reference JSON");
+    const imageDir = required("OXVM_TEST_USERSPACE_IMAGE_DIR", "the directory of the image bundle");
+    const cli = join(root, "node_modules/@oxvm/cli/dist/bin.js");
     const engineId = getSDKRelease().engineRelease.replace(/^sha256:/u, "");
-    const engineDir = process.env["OXIDEVM_ENGINE_DIR"] ?? join(homedir(), ".cache/oxidevm/engine", engineId);
+    const engineDir = process.env["OXVM_ENGINE_DIR"] ?? join(homedir(), ".cache/oxidevm/engine", engineId);
     const compliance = pinnedEngineCompliance();
-    const complianceDir = compliance === null ? undefined : process.env["OXIDEVM_ENGINE_COMPLIANCE_DIR"] ?? join(homedir(), ".cache/oxidevm/engine/compliance", compliance.sha256);
+    const complianceDir = compliance === null ? undefined : process.env["OXVM_ENGINE_COMPLIANCE_DIR"] ?? join(homedir(), ".cache/oxidevm/engine/compliance", compliance.sha256);
     for (const path of [cli, engineDir, imageDir, ...(complianceDir === undefined ? [] : [complianceDir]), join(root, "node_modules/@electric-sql/pglite/dist/pglite.wasm")]) {
       await stat(path).catch(() => { throw new MissingPrerequisite(`${path} is missing.`); });
     }
     await verifiedClients();
 
-    const output = await mkdtemp(join(tmpdir(), "oxidevm-pglite-browser-"));
+    const output = await mkdtemp(join(tmpdir(), "oxvm-pglite-browser-"));
     try {
       await execute(process.execPath, [cli, "wasm", "build"], { cwd: root, maxBuffer: 16 * 1024 ** 2 });
       const project = join(output, "project");
@@ -170,10 +170,10 @@ export class Harness {
   /** A fresh project that uses the release the way an application does: installed with the real CLI from a `file:` source. */
   static async #install(project: string, cli: string, repository: string): Promise<void> {
     await mkdir(join(project, "src"), { recursive: true });
-    await mkdir(join(project, "node_modules/@oxidevm"), { recursive: true });
+    await mkdir(join(project, "node_modules/@oxvm"), { recursive: true });
     await mkdir(join(project, "node_modules/@electric-sql"), { recursive: true });
     await mkdir(join(project, "node_modules/@types"), { recursive: true });
-    await symlink(join(repository, "node_modules/@oxidevm/sdk"), join(project, "node_modules/@oxidevm/sdk"));
+    await symlink(join(repository, "node_modules/@oxvm/sdk"), join(project, "node_modules/@oxvm/sdk"));
     await symlink(join(repository, "node_modules/@electric-sql/pglite"), join(project, "node_modules/@electric-sql/pglite"));
     // PGlite's published declarations use the Emscripten and Node.js ambient types without declaring them.
     for (const name of ["emscripten", "node"]) await symlink(join(repository, "node_modules/@types", name), join(project, "node_modules/@types", name));
@@ -181,7 +181,7 @@ export class Harness {
     await writeFile(join(project, "tsconfig.json"), TSCONFIG);
     await writeFile(join(project, "index.html"), '<!doctype html>\n<meta charset="utf-8">\n<title>PGlite module qualification</title>\n<script type="module" src="/src/main.ts"></script>\n');
     for (const name of await readdir(join(repository, "test/browser/page"))) {
-      if (name === "oxidevm.modules.generated.ts") continue; // the real generated file takes its place
+      if (name === "oxvm.modules.generated.ts") continue; // the real generated file takes its place
       await cp(join(repository, "test/browser/page", name), join(project, "src", name));
     }
     await cp(join(repository, "dist"), join(project, "vendor/pglite"), { recursive: true });

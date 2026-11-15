@@ -1,4 +1,4 @@
-import { LinuxError } from "@oxidevm/sdk/js-process";
+import { LinuxError } from "@oxvm/sdk/js-process";
 import { describe, expect, it } from "vitest";
 import { CLIENT_GONE, STREAM_THRESHOLD, createClientSink } from "../src/client-sink.ts";
 import type { ClientSinkPorts } from "../src/client-sink.ts";

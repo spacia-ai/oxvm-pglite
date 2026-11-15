@@ -41,8 +41,8 @@ describe("starting the adapter", () => {
     const machine = vm();
     const hooks = await definition.adapter(machine.host());
 
-    expect(machine.exists("/workspace/_oxidevm/oxidevm_pglite.py")).toBe(true);
-    expect(machine.read("/workspace/_oxidevm/oxidevm_pglite.py")).toContain("oxidevm-sql/1");
+    expect(machine.exists("/workspace/_oxidevm/oxvm_pglite.py")).toBe(true);
+    expect(machine.read("/workspace/_oxidevm/oxvm_pglite.py")).toContain("oxvm-sql/1");
     expect(machine.read("/workspace/pgdata/PG_VERSION").trim()).toBe("18");
     expect(JSON.parse(machine.read("/workspace/pgdata/.oxidevm-storage.json"))).toMatchObject({ version: 1, source: "new", backup: null });
     expect(await hooks.info?.()).toEqual({ version: "18.6", backend: "pglite-wasm", storage: "workspace", dataDir: "/workspace/pgdata", durability: "strict" });
@@ -181,7 +181,7 @@ describe("a start that cannot succeed", () => {
     expect(await ask(hooks, "SELECT * FROM people")).toMatchObject({ ok: true, result: { rows: [{ id: 1, name: "Ada" }] } });
     expect(await hooks.info?.()).toEqual({ version: "18.6", backend: "pglite-wasm", storage: "memory", durability: "none" });
     expect(machine.exists("/workspace/pgdata")).toBe(false);
-    expect(machine.exists("/workspace/_oxidevm/oxidevm_pglite.py")).toBe(true);
+    expect(machine.exists("/workspace/_oxidevm/oxvm_pglite.py")).toBe(true);
     await hooks.close?.();
   });
 
