@@ -1,6 +1,6 @@
 # oxvm-pglite: instructions for coding agents
 
-This repository is an OXVM WebAssembly module: PGlite (PostgreSQL for WebAssembly) as a Userspace service. `module.ts` holds the literal `manifest` and the wiring of the `adapter`; the behavior lives in leaf modules in `src/`.
+This repository is an OxVM WebAssembly module: PGlite (PostgreSQL for WebAssembly) as a Userspace service. `module.ts` holds the literal `manifest` and the wiring of the `adapter`; the behavior lives in leaf modules in `src/`.
 
 - Edit `module.ts`, `src/`, `guest/` (the Python client), `test/` and `scripts/`. Never edit `dist/` (`pnpm run build` writes it) or the mirrored files in `upstream/` (`node scripts/fetch-upstream.ts` writes them; `upstream/lock.json` is what pins them).
 - Keep the manifest a literal. The build reads it without running code. When a value in it is also used by the adapter (paths, guest files), it is repeated in `src/layout.ts` and `test/module.test.ts` fails when the two differ.

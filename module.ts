@@ -12,7 +12,7 @@ import { openDatabase } from "./src/storage.ts";
 import { wireSession } from "./src/wire.ts";
 
 /**
- * PGlite, PostgreSQL for WebAssembly, as an OXVM service. It keeps its database as live files in the
+ * PGlite, PostgreSQL for WebAssembly, as an OxVM service. It keeps its database as live files in the
  * workspace, answers JSON statements on a Unix socket (`oxvm-sql/1`, for Python and JavaScript clients) and
  * speaks the PostgreSQL protocol on 127.0.0.1:5432 (for psql, psycopg and any driver).
  */

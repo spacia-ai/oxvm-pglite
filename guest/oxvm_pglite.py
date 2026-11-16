@@ -1,11 +1,11 @@
-"""Python client for the SQL endpoint of the OXVM PGlite module (protocol oxvm-sql/1).
+"""Python client for the SQL endpoint of the OxVM PGlite module (protocol oxvm-sql/1).
 
     import oxvm_pglite
 
     result = oxvm_pglite.query("SELECT $1::int + 1 AS next", [41])
     result["rows"]       # [{"next": 42}]
 
-The module listens on a Unix socket in the workspace. Under Pyodide the connection comes from the OXVM bridge
+The module listens on a Unix socket in the workspace. Under Pyodide the connection comes from the OxVM bridge
 (`oxvm.connect_unix`, a blocking socket-like object with sendall, recv and close); with a Linux Python it is an
 ordinary socket. One request is one connection: a 4-byte big-endian length, then a JSON object
 {"sql": ..., "params": [...]}; the reply has the same framing and is {"ok": true, "result": {...}} or
@@ -20,7 +20,7 @@ import socket
 import struct
 import time
 
-try:  # Pyodide: the OXVM bridge provides the socket.
+try:  # Pyodide: the OxVM bridge provides the socket.
     try:
         import oxvm as _bridge
     except ImportError:
