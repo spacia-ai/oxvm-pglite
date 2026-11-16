@@ -154,7 +154,7 @@ describe("the transport", () => {
     return modules;
   }
 
-  it("uses oxvm.connect_unix when the OXVM bridge provides it (Pyodide)", async () => {
+  it("uses oxvm.connect_unix when the OxVM bridge provides it (Pyodide)", async () => {
     const server = await endpoint((_request, connection) => { answer(connection, { ok: true, result: { rows: [1] } }); });
     const modules = bridge([
       "import socket",

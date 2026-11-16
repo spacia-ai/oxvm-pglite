@@ -1,6 +1,6 @@
 # oxvm-pglite
 
-PostgreSQL in your OXVM workspace. This [OXVM](https://oxvm.dev) WebAssembly module runs
+PostgreSQL in your OxVM workspace. This [OxVM](https://oxvm.dev) WebAssembly module runs
 [PGlite](https://pglite.dev) (PostgreSQL 18 compiled to WebAssembly) as a service of a Userspace VM. The database is a
 directory of ordinary files in the workspace, and the service shares the VM's process ids and sockets, so real Linux
 programs reach it:
@@ -8,7 +8,7 @@ programs reach it:
 - **`sql`**: a JSON protocol (`oxvm-sql/1`) on the Unix socket `/workspace/_oxidevm/pglite.sock`, with a small Python client;
 - **`pg`**: the PostgreSQL wire protocol on `127.0.0.1:5432`, for `psql`, psycopg, `pg_dump` and any other driver.
 
-It is the reusable form of the database service in the OXVM sample (`ed4984d`): same behavior, as a module you install
+It is the reusable form of the database service in the OxVM sample (`ed4984d`): same behavior, as a module you install
 with one command instead of code you copy. It asks the host for two things only: file operations and its own process id.
 It starts no program of the image, and it uses no browser storage: no IndexedDB, no Web Locks, no OPFS of its own.
 
