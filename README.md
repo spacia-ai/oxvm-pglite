@@ -322,7 +322,7 @@ pnpm test:browser                # real engine + Chromium (--browser=firefox|web
 ```
 
 `@oxvm/sdk` and `@oxvm/cli` are exact devDependencies, installed from npm; 0.4.1 is built and tested against the
-0.0.27 release. The committed `pnpm-workspace.yaml` allows
+0.0.33 release. The committed `pnpm-workspace.yaml` allows
 the build script of `esbuild`, and `pnpm-lock.yaml` is committed.
 
 ### Real-engine tests
